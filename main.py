@@ -10,7 +10,7 @@ from spotipy.oauth2 import SpotifyOAuth
 
 from datetime import datetime, timedelta
 load_dotenv()
-#https://www.youtube.com/watch?v=olY_2MW4Eik
+
 app = Flask(__name__)
 app.secret_key = os.getenv("APP_SECRET")
 
