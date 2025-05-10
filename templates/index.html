@@ -1,0 +1,238 @@
+<html lang="en">
+<head> 
+    <meta charset=""UTF-8>
+    <meta name="viewport" content="width=device=width, initial-scale=1.0">
+    <style>
+        body{
+            margin: 0;
+            overflow: hidden;
+            animation: colorShift 10s infinite;
+            font-family:  sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #1DB954; 
+            color: #fff; 
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /* Centers the text on the index page and creates it so the text is infront of the bubbles at all time and not overlapped by the bubbles */
+        .text-here{
+            text-align: center;
+            z-index: 2;
+        }
+        /* The chosen color shift from purple all the way to spotify green to keep with the spotify theme  */
+        @keyframes colorShift { 
+            14% {
+                background-color: #8e44ad;
+            }
+            28% {
+                background-color: #bdc3c7;
+            }
+            42% {
+                background-color: #87D1FF;
+            }
+            56% {
+                background-color: #00bcd4;
+            }
+            70% {
+                background-color: #8bc34a;
+            }
+            84% {
+                background-color: #4caf50;
+            }
+            90% {
+                background-color: #1DB954;
+            }
+            100% {
+                background-color: #bdc3c7;
+            }
+        }
+        /* The bubble CSS component itself */
+        .bubble { 
+            position: absolute; 
+            width: 40px;
+            height: 40px;
+            box-shadow: inset 0 0 25px;
+            background: radial-gradient(circle at 30% 30%, #fff 10%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0) 80%); /* Metallic reflective effect */
+            border: 0.5px solid #3498db; /* Outline color */
+            border-radius: 50%;
+            animation: float 15s linear infinite;
+        }
+
+        /* The floating animation of the bubble uses this to move the bubbles form the bottom of the screen to the top like its floating */
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) scale(1);
+            }
+            100% {
+                transform: translateY(-100vh) scale(1);
+            }
+        }
+        /* Delays for all 40 of the bubbles created by the script */
+        .bubble:nth-child(2) {
+            animation-delay: 1s; 
+        }
+
+        .bubble:nth-child(3) {
+            animation-delay: 2.7s; 
+        }
+        .bubble:nth-child(4) {
+            animation-delay: 1.5s; 
+        }
+
+        .bubble:nth-child(5) {
+            animation-delay: 2.2s; 
+        }
+        .bubble:nth-child(6) {
+            animation-delay: 1.9s; 
+        }
+
+        .bubble:nth-child(7) {
+            animation-delay: 2s; 
+        }
+        .bubble:nth-child(8) {
+            animation-delay: 4s; 
+        }
+
+        .bubble:nth-child(9) {
+            animation-delay: 3.5s; 
+        }
+        .bubble:nth-child(10) {
+            animation-delay: 1s; 
+        }
+
+        .bubble:nth-child(11) {
+            animation-delay: 3.33s; 
+        }
+        .bubble:nth-child(12) {
+            animation-delay: 1.5s; 
+        }
+
+        .bubble:nth-child(13) {
+            animation-delay: 4.7s; 
+        }
+        .bubble:nth-child(14) {
+            animation-delay: 3.4s; 
+        }
+
+        .bubble:nth-child(15) {
+            animation-delay: 2s; 
+        }
+        .bubble:nth-child(16) {
+            animation-delay: 4s; 
+        }
+
+        .bubble:nth-child(17) {
+            animation-delay: 3.5s; 
+        }
+        .bubble:nth-child(18) {
+            animation-delay: 6s; 
+        }
+        .bubble:nth-child(19) {
+            animation-delay: 4.1s; 
+        } 
+
+        .bubble:nth-child(20) {
+            animation-delay: 7s; 
+        }
+
+        .bubble:nth-child(21) {
+            animation-delay: 8s; 
+        }
+        .bubble:nth-child(22) {
+            animation-delay: 9s; 
+        }
+
+        .bubble:nth-child(23) {
+            animation-delay: 10s; 
+        }
+        .bubble:nth-child(24) {
+            animation-delay: 7.7s; 
+        }
+
+        .bubble:nth-child(25) {
+            animation-delay: 6.8s; 
+        }
+        .bubble:nth-child(26) {
+            animation-delay: 8.8s; 
+        }
+
+        .bubble:nth-child(27) {
+            animation-delay: 12.5s; 
+        }
+        .bubble:nth-child(28) {
+            animation-delay: 12s; 
+        }
+
+        .bubble:nth-child(29) {
+            animation-delay: 14s; 
+        }
+        .bubble:nth-child(30) {
+            animation-delay: 13s; 
+        }
+
+        .bubble:nth-child(31) {
+            animation-delay: 12.4s; 
+        }
+        .bubble:nth-child(32) {
+            animation-delay: 7.8s; 
+        }
+
+        .bubble:nth-child(33) {
+            animation-delay: 9.9s; 
+        }
+        .bubble:nth-child(34) {
+            animation-delay: 6.8s; 
+        }
+
+        .bubble:nth-child(35) {
+            animation-delay: 7.6s; 
+        }
+        .bubble:nth-child(36) {
+            animation-delay: 8.6s; 
+        }
+        .bubble:nth-child(37) {
+            animation-delay: 7.9s; 
+        } 
+    </style>
+</head>
+<body>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+           // Number of bubbles to be spawning 
+           const numberOfBubbles = 40;
+
+           //for loop spawning all the bubbles and creating the divs for the bubbles 
+            for (let i = 0; i < numberOfBubbles; i++) {
+                const bubble = document.createElement("div");
+                bubble.classList.add("bubble");
+
+                // Sets the random positions for the variables used to place bubbles
+                const randomX = Math.random() * window.innerWidth;
+                const randomYOffset = Math.random() * 40;
+                bubble.style.top = `${ 975 + randomYOffset}px`;   
+                // Set random initial size
+                const randomSize = Math.random() * (80 - 20) + 10;  // randomizes the size of the bubbles 
+
+                bubble.style.left = `${randomX}px`;
+                bubble.style.width = `${randomSize}px`;
+                bubble.style.height = `${randomSize}px`;
+
+                const randomDelay = Math.random() * 12;
+                bubble.style.animationDelay = `${randomDelay}s`;
+
+
+                document.body.appendChild(bubble);
+             }
+        });
+    </script>
+    <div class="text-here">
+        <h1>Welcome to the Spotify Playlist Generator App <br></h1><br>
+        <a href='/login'> Login with Spotify </a>
+    </div>
+</body>
+
+
+</html>

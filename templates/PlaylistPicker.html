@@ -1,0 +1,102 @@
+<html>
+    <head>
+        <meta charset=""UTF-8>
+        <meta name="viewport" content="width=device=width, initial-scale=1.0">
+        <style>
+        body{
+            margin: 0;
+            overflow: hidden;
+            animation: colorShift 10s infinite;
+            font-family:  sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #1DB954; 
+            color: #fff; 
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        @keyframes colorShift { 
+            14% {
+                background-color: #8e44ad;
+            }
+            28% {
+                background-color: #bdc3c7;
+            }
+            42% {
+                background-color: #87D1FF;
+            }
+            56% {
+                background-color: #00bcd4;
+            }
+            70% {
+                background-color: #8bc34a;
+            }
+            84% {
+                background-color: #4caf50;
+            }
+            90% {
+                background-color: #1DB954;
+            }
+            100% {
+                background-color: #bdc3c7;
+            }
+        }
+        .container{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center; 
+            gap: 2rem;
+            text-align: center;
+            padding: 2rem;
+            height: 100%;
+        }
+        .bubble-btn{
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            font-size: large;
+            display: inline-block;
+            padding: 1rem 2rem;
+            max-width: 600px;
+            width: 90%;
+            background: rgba(255,255,255,0.7);
+            font-weight: bold;
+            border-radius: 2rem;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .bubble-btn:hover{
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+        }
+        .bubble-btn *{
+            position: relative;
+            z-index: 1;
+        }
+        </style>
+    </head>
+
+    <body>
+        <div class="container">
+                <h1> Choose How To Generate Your Playlist </h1> 
+            <a href="{{ url_for('select_playlist')}}">
+                <button class="bubble-btn">
+                    <h5> Chosen playlist will be used as the base to generate your personalized playlist </h5>
+                </button>
+            </a>
+            <h3> Or</h3>
+            <a href="{{ url_for('autogenerate')}}">
+                <button class="bubble-btn" onclick="window.location.href='Autogenerate.html'">
+                    <h5> Autogenerates playlist using your top 20 songs </h5>
+                </button>
+            </a>
+         </div>
+    </body>
+
+
+
+</html>
