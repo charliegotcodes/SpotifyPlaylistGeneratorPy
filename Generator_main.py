@@ -21,7 +21,9 @@ app.secret_key = os.getenv("APP_SECRET")
 CLIENT_ID = os.getenv("SPOTIPY_CLIENT_ID")
 CLIENT_SECRET = os.getenv("SPOTIPY_CLIENT_SECRET")
 REDIRECT_URI = os.getenv("SPOTIPY_REDIRECT_URI")
-SCOPE = 'user-read-private user-read-email'
+
+# Scope Privileges
+SCOPE = 'user-read-private playlist-read-private playlist-read-collaborative user-library-read'
 
 sp_oauth = SpotifyOAuth( client_id = CLIENT_ID, client_secret = CLIENT_SECRET, redirect_uri = REDIRECT_URI, scope = SCOPE)
 
@@ -54,16 +56,10 @@ def submit():
 
 @app.route('/login')
 def login():
-    scope = (
-        "user-read-private "
-        "playlist-modify-public "
-        "playlist-modify-private "
-        "playlist-read-private"
-    )
     params = {
         "client_id":     CLIENT_ID,
         "response_type": "code",
-        "scope":         scope,
+        "scope":         SCOPE,
         "redirect_uri":  REDIRECT_URI,
         "show_dialog":   True
     }
@@ -115,9 +111,40 @@ def select_playlist():
 def autogenerate():
     return render_template('autogenerate.html')
 
-@app.route('/generation')
+@app.route('/generation', methods=['POST'])
 def generation():
-    """"""
+    pid = request.form['playlist_id']
+    session['chosen_playlist'] = pid
+    print(pid)
+    playlist_id = session.get('chosen_playlist')
+    if not playlist_id:
+        return redirect(url_for('select_playlist'))
+    
+    if sp_oauth.is_token_expired(session):
+        tok = sp_oauth.refresh_access_token(session['refresh_token'])
+        session['access_token'] = tok['access_token']
+        session['expires_at']   = tok['expires_at']
+    sp = Spotify(auth=session['access_token'])
+
+    tracks_data = sp.playlist_tracks(playlist_id)
+    tracks_ids = [item['track']['id']
+        for item in tracks_data['items']
+        if item['track'] and item['track']['id']]
+
+    features = sp.audio_features(tracks_ids)
+    features = [feats for feats in features if feats]
+
+    avg = {'danceability': sum(feats['danceability'] for feats in features) / len(features),
+        'energy': sum(feats['energy'] for feats in features) / len(features),
+        'instrumentalness': sum(feats['instrumentalness'] for feats in features) / len(features),
+        'liveness': sum(feats['liveness'] for feats in features) / len(features),
+        'loudness': sum(feats['loudness'] for feats in features) / len(features),
+        'tempo': sum(feats['tempo'] for feats in features) / len(features),
+        'valence': sum(feats['valence'] for feats in features) / len(features),
+        'acousticness': sum(feats['acousticness'] for feats in features) / len(features)
+    }
+    print(avg)
+    return render_template('generation.html', playlist_id=pid)
 
 
 if __name__ == "__main__":

@@ -196,6 +196,30 @@
         .bubble:nth-child(37) {
             animation-delay: 7.9s; 
         } 
+        .bubble-btn{
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            font-size: large;
+            display: inline-block;
+            padding: 1rem 2rem;
+            max-width: 600px;
+            width: 90%;
+            background: rgba(255,255,255,0.7);
+            font-weight: bold;
+            border-radius: 2rem;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .bubble-btn:hover{
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+        }
+        .bubble-btn *{
+            position: relative;
+            z-index: 1;
+        }
     </style>
 </head>
 <body>
@@ -230,7 +254,9 @@
     </script>
     <div class="text-here">
         <h1>Welcome to the Spotify Playlist Generator App <br></h1><br>
-        <a href='/login'> Login with Spotify </a>
+        <button class="bubble-btn">
+            <a href='/login'> Login with Spotify </a>
+        </button>
     </div>
 </body>
 
