@@ -2,6 +2,7 @@ import os
 # Used for creating and managing routes on a flask app
 from flask import Flask, redirect, request, jsonify, session, render_template, url_for
 
+
 # Python library for Spotify API
 from spotipy import Spotify 
 from spotipy.oauth2 import SpotifyOAuth
@@ -9,6 +10,8 @@ from spotipy.oauth2 import SpotifyOAuth
 # Loads Enviroment variables 
 from dotenv import load_dotenv
 import urllib.parse
+
+import time 
 
 # Responsible for loading the enviroment variables
 load_dotenv()
@@ -38,12 +41,6 @@ def get_user_preferences():
     danceability = float(input("Enter a desired danceability level (0.0 to 1.0): ")).strip()
 
     return genre, energy, danceability
-
-def get_recommendations(spot: Spotify, genre: str, energy: float, danceability: float):
-    """"""
-    return 
-
-
 
 @app.route('/')
 def index():
@@ -120,30 +117,34 @@ def generation():
     if not playlist_id:
         return redirect(url_for('select_playlist'))
     
-    if sp_oauth.is_token_expired(session):
-        tok = sp_oauth.refresh_access_token(session['refresh_token'])
-        session['access_token'] = tok['access_token']
-        session['expires_at']   = tok['expires_at']
+    if time.time() > session.get('expires_at', 0):
+        token_info = sp_oauth.refresh_access_token(session['refresh_token'])
+        session['access_token'] = token_info['access_token']
+        session['expires_at'] = time.time() + token_info['expires_in']
     sp = Spotify(auth=session['access_token'])
 
-    tracks_data = sp.playlist_tracks(playlist_id)
-    tracks_ids = [item['track']['id']
-        for item in tracks_data['items']
-        if item['track'] and item['track']['id']]
+    tracks = []
+    tracks_data = sp.playlist_items(playlist_id, additional_types=['track'], fields='items(track(id,name,uri,artists(name))),next', limit=100)
+    while True:
+        for item in tracks_data['items']:
+            t = item.get('track') or {}
+            tid = t.get('id')
+            if tid: 
+                tracks.append({
+                    'id': tid,
+                    'name': t['name'],
+                    'artists': ', '.join(a['name'] for a in t.get('artists', [])),
+                    'uri': t['uri']
+                })
+        if tracks_data.get('next'):
+            tracks_data = sp.next(tracks_data)
+        else:
+            break 
+    
+    # audio features has been deprecated so I have opted to utilize twitter's api to find similar artists to those in the given playlist
+    meta_by_id = {t['id']: {'name': t['name'], 'artists': t['artists']} for t in tracks}
+    print(meta_by_id)
 
-    features = sp.audio_features(tracks_ids)
-    features = [feats for feats in features if feats]
-
-    avg = {'danceability': sum(feats['danceability'] for feats in features) / len(features),
-        'energy': sum(feats['energy'] for feats in features) / len(features),
-        'instrumentalness': sum(feats['instrumentalness'] for feats in features) / len(features),
-        'liveness': sum(feats['liveness'] for feats in features) / len(features),
-        'loudness': sum(feats['loudness'] for feats in features) / len(features),
-        'tempo': sum(feats['tempo'] for feats in features) / len(features),
-        'valence': sum(feats['valence'] for feats in features) / len(features),
-        'acousticness': sum(feats['acousticness'] for feats in features) / len(features)
-    }
-    print(avg)
     return render_template('generation.html', playlist_id=pid)
 
 

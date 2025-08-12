@@ -73,14 +73,40 @@
             transform: translateY(-5px);
             box-shadow: 0 12px 30px rgba(0,0,0,0.3);
         }
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            background: rgba(0,0,0,0.35);
+            backdrop-filter: blur(10px);
+            z-index: 999;
+        }
+        .spinner {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            border: 8px solid #f3f3f3; 
+            border-top-color: #1DB954;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin { to {transform: rotate(360deg);}}
+        .app--loading { filter: blur(1px); opacity: 0.85; transition: filter .2s, opacity .2s; }
         </style>
     </head>
     <body>
+        <div id="overlay" class="overlay" aria-hidden="true">
+            <div class="spinner" aria-label="Loading playlists…" role="status"></div>
+          </div>
+
+        <div id="app" class="app--loading"></div>
         <h1> Pick Your Playlist</h1>
-        <div class="container">
+        <div class="container" id="grid">
             {% for pid in playlist_ids %}
             <div class = "playlist-item">
-                <iframe src = "https://open.spotify.com/embed/playlist/{{ pid }}" allowtransparency="true" allow="encrypted-media" value="{{ pid }}">
+                <iframe loading="lazy" src = "https://open.spotify.com/embed/playlist/{{ pid }}" allowtransparency="true" allow="encrypted-media" value="{{ pid }}">
                 </iframe>
                 <form
                 action="{{ url_for('generation') }}"
@@ -91,5 +117,60 @@
             </div>
             {% endfor %}
         </div>
+    </div>
+    <script>
+    window.addEventListener('DOMContentLoaded', () => {
+        const overlay = document.getElementById('overlay');
+        const app = document.getElementById('app');
+        const iframes = Array.from(document.querySelectorAll('iframe'));
+
+        // Edge case of 0 iframes
+        if (iframes.length === 0) {
+          overlay.style.display = 'none';
+          app.classList.remove('app--loading');
+          return;
+        }
+
+        let loaded = 0;
+        const done = () => {
+          overlay.style.display = 'none';
+          app.classList.remove('app--loading');
+        };
+
+        // Safety timeout if provider is slow
+        const SAFETY_MS = 25000;
+        const safetyTimer = setTimeout(done, SAFETY_MS);
+
+        // Counts total of iframes loaded
+        iframes.forEach((frame) => {
+          // If it’s already loaded (from cache), 'complete' might be true
+          if (frame.complete) {
+            loaded++;
+            if (loaded >= iframes.length) {
+              clearTimeout(safetyTimer);
+              done();
+            }
+            return;
+          }
+
+          frame.addEventListener('load', () => {
+            loaded++;
+            if (loaded >= iframes.length) {
+              clearTimeout(safetyTimer);
+              done();
+            }
+          }, { once: true });
+
+          // Also treat 'error' as loaded so we don’t hang
+          frame.addEventListener('error', () => {
+            loaded++;
+            if (loaded >= iframes.length) {
+              clearTimeout(safetyTimer);
+              done();
+            }
+          }, { once: true });
+        });
+      });
+    </script>
     </body>
 </html>
