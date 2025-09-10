@@ -1,43 +1,134 @@
-<html>
-    <head>
-    <meta charset=""UTF-8>
-    <meta name="viewport" content="width=device=width, initial-scale=1.0">
-    <style>
-        body{
-        margin: 0;
-        animation: colorShift 10s infinite;
-        font-family:  sans-serif;
-        padding: 1rem;
-        background-color: #1DB954; 
-        color: #fff; 
-        height: 100vh;
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Twitter Discovery Results</title>
+  <style>
+    body{
+      margin:0;
+      animation: colorShift 10s infinite;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      padding:1rem;
+      background-color:#1DB954;
+      color:#fff;
+      min-height:100vh;
     }
-    @keyframes colorShift { 
-        14% {
-            background-color: #8e44ad;
-        }
-        28% {
-            background-color: #bdc3c7;
-        }
-        42% {
-            background-color: #87D1FF;
-        }
-        56% {
-            background-color: #00bcd4;
-        }
-        70% {
-            background-color: #8bc34a;
-        }
-        84% {
-            background-color: #4caf50;
-        }
-        90% {
-            background-color: #1DB954;
-        }
-        100% {
-            background-color: #bdc3c7;
-        }
+    @keyframes colorShift{
+      14%{background-color:#8e44ad;}
+      28%{background-color:#bdc3c7;}
+      42%{background-color:#87D1FF;}
+      56%{background-color:#00bcd4;}
+      70%{background-color:#8bc34a;}
+      84%{background-color:#4caf50;}
+      90%{background-color:#1DB954;}
+      100%{background-color:#bdc3c7;}
     }
-    </style>
-    </head>
+    .row{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap}
+    .panel{
+      flex:1;min-width:320px;background:rgba(0,0,0,.15);
+      border:1px solid rgba(255,255,255,.25);
+      border-radius:12px;padding:16px
+    }
+    .pill{display:inline-block;background:rgba(0,0,0,.25);
+      border:1px solid rgba(255,255,255,.25);
+      border-radius:999px;padding:4px 8px;margin:2px 6px 2px 0}
+    .muted{opacity:.9}.small{font-size:.92rem}
+    ul{margin:.5rem 0 0 1.25rem}
+    li{margin:.25rem 0}
+    .rec{padding:10px;border:1px solid rgba(255,255,255,.25);border-radius:10px;margin:8px 0;background:rgba(0,0,0,.15)}
+    .rec a{color:#eaf6ff;text-decoration:none}
+    .rec a:hover{text-decoration:underline}
+
+    /* Bird */
+    .tweepy-bird{
+      position:fixed;
+      top:calc(50vh - 110px/2);
+      left:-10vw;
+      z-index:999;
+      pointer-events:none;
+      opacity:.95;
+      animation:bird-fly 6s linear infinite;
+    }
+    .tweepy-bird svg{
+      width:110px;height:110px;
+      fill:#1d9bf0; /* X/Twitter blue */
+      filter:drop-shadow(0 2px 4px rgba(0,0,0,.25));
+    }
+    @keyframes bird-fly{
+      0%   { transform: translateX(-10vw) translateY(0)  scale(1); }
+      50%  { transform: translateX(50vw)  translateY(-4vh) scale(1.05); }
+      100% { transform: translateX(110vw) translateY(0)  scale(1); }
+    }
+    /* stop/hide the bird */
+    .tweepy-bird.hidden{ animation:none !important; display:none; }
+
+    @media (prefers-reduced-motion: reduce){
+      .tweepy-bird{ animation:none; left:5vw; }
+    }
+    .tweepy-bird.hidden { animation: none !important; display: none !important; }
+  </style>
+</head>
+<body>
+  <h1>Twitter Discovery Results</h1>
+  <p class="muted small">Playlist ID: <span class="pill">{{ playlist_id }}</span></p>
+
+  <div class="row">
+    <section class="panel">
+      <h2>Seed tracks ({{ meta_by_id|length }})</h2>
+      <ul>
+        {% for tid, meta in meta_by_id.items() %}
+          <li>
+            <span class="pill">{{ meta.name }}</span>
+            <span class="small muted">— {{ meta.artists }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+
+    <section class="panel">
+      <h2>Recommendations</h2>
+      {% if recs %}
+        {% for seed_id, items in recs.items() %}
+          <h3>{{ meta_by_id[seed_id].name }} — {{ meta_by_id[seed_id].artists }}</h3>
+          {% for r in items %}
+            {% set track_id = r.track_id if r.track_id is defined and r.track_id else (r.spotify_uri.split(':')[-1] if r.spotify_uri else '') %}
+            <div class="rec">
+              <div><strong>{{ r.rec_artist }}</strong> — {{ r.rec_track }}</div>
+              <div class="small muted">
+                <a target="_blank" rel="noopener" href="https://open.spotify.com/track/{{ track_id }}">Open in Spotify</a>
+                · via {{ r.via }}
+              </div>
+            </div>
+          {% endfor %}
+        {% endfor %}
+      {% else %}
+        <p class="muted">No recommendations found. Try another playlist or lower the engagement thresholds.</p>
+      {% endif %}
+    </section>
+  </div>
+
+  <!-- Bird (hidden once recommendations are rendered) -->
+  <div class="tweepy-bird" aria-hidden="true">
+    <svg viewBox="0 0 24 24" role="img" aria-label="Twitter Bird">
+      <path d="M23 4.8c-.8.3-1.6.5-2.5.6.9-.5 1.6-1.4 1.9-2.4-.9.5-1.9.9-3 1.1A4.1 4.1 0 0 0 12 6.9c0 .3 0 .6.1.9C8.3 7.6 5 5.9 2.9 3.2c-.4.7-.6 1.4-.6 2.2 0 1.4.7 2.7 1.8 3.5-.6 0-1.3-.2-1.8-.5v.1c0 2 1.5 3.7 3.5 4.1-.4.1-.8.2-1.2.2-.3 0-.6 0-.8-.1.6 1.7 2.2 3 4.1 3.1A8.3 8.3 0 0 1 1 18.9a11.7 11.7 0 0 0 6.3 1.8c7.6 0 11.8-6.3 11.8-11.8v-.5c.8-.6 1.5-1.3 2-2.1z"/>
+    </svg>
+  </div>
+
+  {% set recs_count = (recs|default({})|map('length')|sum)|int %}
+
+  <!-- <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var bird = document.querySelector('.tweepy-bird');
+      if (!bird) return;
+  
+      // Ensure Flask renders the value safely
+      var recsCount = {{ recs_count | default(0) | int | tojson }};
+  
+      if (recsCount > 0) {
+        bird.classList.add('hidden');
+      }
+    });
+  </script> -->
+</body>
 </html>
