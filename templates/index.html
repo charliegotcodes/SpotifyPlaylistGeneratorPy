@@ -55,8 +55,8 @@
             width: 40px;
             height: 40px;
             box-shadow: inset 0 0 25px;
-            background: radial-gradient(circle at 30% 30%, #fff 10%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0) 80%); /* Metallic reflective effect */
-            border: 0.5px solid #3498db; /* Outline color */
+            background: radial-gradient(circle at 30% 30%, #fff 10%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0) 80%);
+            border: 0.5px solid #3498db;
             border-radius: 50%;
             animation: float 15s linear infinite;
         }
@@ -238,7 +238,7 @@
                 const randomYOffset = Math.random() * 40;
                 bubble.style.top = `${ 975 + randomYOffset}px`;   
                 // Set random initial size
-                const randomSize = Math.random() * (80 - 20) + 10;  // randomizes the size of the bubbles 
+                const randomSize = Math.random() * (80 - 20) + 10; 
 
                 bubble.style.left = `${randomX}px`;
                 bubble.style.width = `${randomSize}px`;

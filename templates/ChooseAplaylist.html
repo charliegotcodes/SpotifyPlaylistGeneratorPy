@@ -1,7 +1,7 @@
 <html>
     <head>
-        <meta charset=""UTF-8>
-        <meta name="viewport" content="width=device=width, initial-scale=1.0">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
             body{
             margin: 0;
@@ -99,78 +99,82 @@
     <body>
         <div id="overlay" class="overlay" aria-hidden="true">
             <div class="spinner" aria-label="Loading playlists…" role="status"></div>
-          </div>
-
+        </div>
+    
         <div id="app" class="app--loading"></div>
         <h1> Pick Your Playlist</h1>
         <div class="container" id="grid">
-            {% for pid in playlist_ids %}
-            <div class = "playlist-item">
-                <iframe loading="lazy" src = "https://open.spotify.com/embed/playlist/{{ pid }}" allowtransparency="true" allow="encrypted-media" value="{{ pid }}">
+            {% for pl in playlists %}
+            <div class="playlist-item">
+                <!-- Spotify embed preview -->
+                <iframe loading="lazy"
+                        src="https://open.spotify.com/embed/playlist/{{ pl['id'] }}"
+                        allowtransparency="true"
+                        allow="encrypted-media">
                 </iframe>
-                <form
-                action="{{ url_for('generation') }}"
-                method="post">
-                <input type="hidden" name="playlist_id" value="{{ pid }}">
-                <button class="choose" type="submit" title="Select this playlist">SELECT THIS PLAYLIST</button>
+    
+                <!-- Playlist name -->
+                <p><strong>{{ pl['name'] }}</strong></p>
+    
+                <!-- Selection form -->
+                <form action="{{ url_for('playlists.name_playlist') }}" method="post">
+                    <input type="hidden" name="playlist_id" value="{{ pl['id'] }}">
+                    <button class="choose" type="submit" title="Select this playlist">
+                        SELECT THIS PLAYLIST
+                    </button>
                 </form>
             </div>
             {% endfor %}
         </div>
-    </div>
-    <script>
-    window.addEventListener('DOMContentLoaded', () => {
-        const overlay = document.getElementById('overlay');
-        const app = document.getElementById('app');
-        const iframes = Array.from(document.querySelectorAll('iframe'));
-
-        // Edge case of 0 iframes
-        if (iframes.length === 0) {
-          overlay.style.display = 'none';
-          app.classList.remove('app--loading');
-          return;
-        }
-
-        let loaded = 0;
-        const done = () => {
-          overlay.style.display = 'none';
-          app.classList.remove('app--loading');
-        };
-
-        // Safety timeout if provider is slow
-        const SAFETY_MS = 25000;
-        const safetyTimer = setTimeout(done, SAFETY_MS);
-
-        // Counts total of iframes loaded
-        iframes.forEach((frame) => {
-          // If it’s already loaded (from cache), 'complete' might be true
-          if (frame.complete) {
-            loaded++;
-            if (loaded >= iframes.length) {
-              clearTimeout(safetyTimer);
-              done();
+    
+        <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const overlay = document.getElementById('overlay');
+            const app = document.getElementById('app');
+            const iframes = Array.from(document.querySelectorAll('iframe'));
+    
+            if (iframes.length === 0) {
+              overlay.style.display = 'none';
+              app.classList.remove('app--loading');
+              return;
             }
-            return;
-          }
-
-          frame.addEventListener('load', () => {
-            loaded++;
-            if (loaded >= iframes.length) {
-              clearTimeout(safetyTimer);
-              done();
-            }
-          }, { once: true });
-
-          // Also treat 'error' as loaded so we don’t hang
-          frame.addEventListener('error', () => {
-            loaded++;
-            if (loaded >= iframes.length) {
-              clearTimeout(safetyTimer);
-              done();
-            }
-          }, { once: true });
+    
+            let loaded = 0;
+            const done = () => {
+              overlay.style.display = 'none';
+              app.classList.remove('app--loading');
+            };
+    
+            const SAFETY_MS = 25000;
+            const safetyTimer = setTimeout(done, SAFETY_MS);
+    
+            iframes.forEach((frame) => {
+              if (frame.complete) {
+                loaded++;
+                if (loaded >= iframes.length) {
+                  clearTimeout(safetyTimer);
+                  done();
+                }
+                return;
+              }
+    
+              frame.addEventListener('load', () => {
+                loaded++;
+                if (loaded >= iframes.length) {
+                  clearTimeout(safetyTimer);
+                  done();
+                }
+              }, { once: true });
+    
+              frame.addEventListener('error', () => {
+                loaded++;
+                if (loaded >= iframes.length) {
+                  clearTimeout(safetyTimer);
+                  done();
+                }
+              }, { once: true });
+            });
         });
-      });
-    </script>
+        </script>
     </body>
 </html>

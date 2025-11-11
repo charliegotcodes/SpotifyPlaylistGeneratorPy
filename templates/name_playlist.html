@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Name Your Playlist</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1DB954, #191414);
+            color: white;
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+        }
+        input, button {
+            padding: 10px 15px;
+            font-size: 1rem;
+            border-radius: 30px;
+            border: none;
+            margin-top: 15px;
+        }
+        input {
+            width: 300px;
+        }
+        button {
+            background-color: #1DB954;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+    <h1>🎵 Name Your New Playlist</h1>
+    <p>You selected <strong>{{ original_name }}</strong>.</p>
+    <form action="{{ url_for('playlists.generation') }}" method="post">
+        <input type="text" name="new_playlist_name" placeholder="Enter playlist name..." required>
+        <button type="submit">Generate Playlist</button>
+      </form>
+</body>
+</html>

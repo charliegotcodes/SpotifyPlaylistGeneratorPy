@@ -2,3 +2,7 @@ requests
 python-dotenv
 flask
 spotipy
+openai 
+beautifulsoup4 
+supabase 
+numpy
