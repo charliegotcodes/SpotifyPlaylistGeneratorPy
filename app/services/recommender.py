@@ -1,12 +1,15 @@
 import time
 import numpy as np
 import logging
+import traceback
+import requests
 from spotipy import Spotify
+from spotipy.exceptions import SpotifyException
 from flask import session
 from .spotify_api import get_artist_from_playlist
 from .lyrics_getter import get_lyrics 
 from .lyrics_embedding import generate_and_store_embedding, find_similar_songs
-from .supabase_db import SUPABASE_ANON as supabase
+from .supabase_db import SUPABASE_ADMIN
 from .utils import is_duplicate_song 
 
 log = logging.getLogger("playlistgen")
@@ -21,7 +24,7 @@ def generate_playlist_from_seed(sp: Spotify, access_token: str, playlist_id: str
     seed_artists, seed_ids, track_ids, track_names = get_artist_from_playlist(access_token, playlist_id)
     log.info("gen: seeds | tracks=%d", len(track_ids))
 
-    # Deduplicate seed tracks (same artist or near-identical title)
+    # Deduplicate seed tracks 
     seen_sigs = set() 
     unique_seeds = []
     for tid, tname, aname in zip(track_ids, track_names, seed_artists):
@@ -66,12 +69,33 @@ def generate_playlist_from_seed(sp: Spotify, access_token: str, playlist_id: str
             log.info("gen: skip duplicate rec | %s — %s", cand_artist, cand_title)
             continue
 
-        # Try exact match first, then fallback to title-only search
         q = f"track:{cand_title} artist:{cand_artist}"
-        items = sp.search(q=q, type="track", limit=1).get("tracks", {}).get("items", [])
+
+        try:
+            # exact match
+            resp = sp.search(q=q, type="track", limit=1)
+            items = resp.get("tracks", {}).get("items", [])
+
+            # title-only search
+            if not items and cand_title:
+                resp = sp.search(q=cand_title, type="track", limit=1)
+                items = resp.get("tracks", {}).get("items", [])
+
+        except SpotifyException as e:
+            log.error("gen: Spotify API error during search for '%s — %s': %s", cand_artist, cand_title, e)
+            traceback.print_exc()
+            continue
+        except requests.exceptions.RequestException as e:
+            log.error("gen: network error calling Spotify for '%s — %s': %s", cand_artist, cand_title, e)
+            traceback.print_exc()
+            continue
+        except Exception as e:
+            log.error("gen: unexpected error during Spotify search for '%s — %s': %s", cand_artist, cand_title, e)
+            traceback.print_exc()
+            continue
+
         if not items:
-            items = sp.search(q=cand_title, type="track", limit=1).get("tracks", {}).get("items", [])
-        if not items:
+            log.info("gen: no Spotify results | %s — %s", cand_artist, cand_title)
             continue
 
         tid2 = items[0]["id"]
@@ -93,10 +117,10 @@ def generate_playlist_from_seed(sp: Spotify, access_token: str, playlist_id: str
 
     # Optionally persist metadata to Supabase
     try:
-        if supabase:
-            user_row = supabase.table("users").select("id").eq("spotify_id", user_id).execute()
+        if SUPABASE_ADMIN:
+            user_row = SUPABASE_ADMIN.table("users").select("id").eq("spotify_id", user_id).execute()
             uid = user_row.data[0]["id"] if user_row.data else None
-            supabase.table("playlists").insert({
+            SUPABASE_ADMIN.table("playlists").insert({
                 "user_id": uid,
                 "name": new_playlist["name"],
                 "spotify_playlist_id": new_playlist["id"],

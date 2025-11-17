@@ -1,5 +1,6 @@
 # app/routes/playlists.py
 from flask import Blueprint, render_template, request, session, redirect, url_for, jsonify
+from spotipy import Spotify
 from ..services.spotify_api import ensure_spotify, collect_meta_by_id
 from ..services.recommender import generate_playlist_from_seed
 
@@ -14,9 +15,15 @@ def select_playlist():
         session["chosen_playlist"] = pid
         return redirect(url_for("playlists.generation"))
 
-    sp, _ = ensure_spotify()
+    sp, access_token = ensure_spotify()
     if not sp:
         return redirect(url_for("auth.login"))
+
+    sp = Spotify(
+        auth=access_token,
+        requests_timeout=10,
+        retries=3,
+    )
 
     # fetch ALL playlists (owned and followed)
     limit, offset = 50, 0
@@ -30,7 +37,7 @@ def select_playlist():
         else:
             break
 
-    # minimal dicts with id/name for your template
+    # dicts with id/name for your template
     playlists = [{"id": p.get("id"), "name": p.get("name")} for p in all_items if p.get("id")]
 
     return render_template("ChooseAplaylist.html", playlists=playlists)
@@ -62,7 +69,7 @@ def generation():
     # make generator return {"id": "...", "added": N} 
     result = generate_playlist_from_seed(sp, access_token, pid, new_name)
 
-    new_pl_id = result["id"] if isinstance(result, dict) else result  # handle old return shape
+    new_pl_id = result["id"] if isinstance(result, dict) else result
     added     = (result.get("added", 0) if isinstance(result, dict) else None)
 
     print("generation(): new_pl_id =", new_pl_id, "added =", added)

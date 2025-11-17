@@ -27,9 +27,9 @@ def callback():
 
     # Supabase upsert for the user's info
     try:
-        from ..services.supabase_db import supabase
-        if supabase:
-            supabase.table("users").upsert(
+        from ..services.supabase_db import SUPABASE_ADMIN
+        if SUPABASE_ADMIN:
+            SUPABASE_ADMIN.table("users").upsert(
                 {"spotify_id": session["spotify_id"], "display_name": display_name},
                 on_conflict=["spotify_id"]
             ).execute()

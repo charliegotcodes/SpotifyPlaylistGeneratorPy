@@ -16,7 +16,13 @@ def ensure_spotify():
         session["token_info"] = token_info
 
     access_token = token_info["access_token"]
-    return Spotify(auth=access_token), access_token
+
+    sp = Spotify(
+        auth=access_token,
+        requests_timeout=10,   
+        retries=3,             
+    )
+    return sp, access_token
 
 def collect_meta_by_id(sp: Spotify, playlist_id: str) -> dict:
     """Collect track metadata (name, artist, URI) from a playlist
