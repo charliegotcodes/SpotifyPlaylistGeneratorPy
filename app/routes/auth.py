@@ -6,13 +6,8 @@ auth_bp = Blueprint("auth", __name__)
 @auth_bp.route("/login")
 def login():
     sp_oauth = current_app.config["SP_OAUTH"]
-    #remove after checking redirect uri
     auth_url = sp_oauth.get_authorize_url()
-    print("AUTH URL:", auth_url) 
-
-    parsed = urlparse.urlparse(auth_url)
-    qs = urlparse.parse_qs(parsed.query)
-    print("redirect_uri param:", qs.get("redirect_uri"))
+    print("AUTH URL:", auth_url)
     return redirect(sp_oauth.get_authorize_url())
 
 @auth_bp.route("/callback")
