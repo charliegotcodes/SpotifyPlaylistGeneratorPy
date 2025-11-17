@@ -5,7 +5,6 @@ import traceback
 
 def embed_text(lyrics_text, max_chunk_chars=20000):
     """Embed lyrics into a single vector via OpenAI."""
-    # Basic safety: skip very short or empty lyrics
     if not lyrics_text or len(lyrics_text) < 50:
         return None
     
