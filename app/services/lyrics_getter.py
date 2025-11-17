@@ -64,22 +64,30 @@ def _is_good_hit(result: dict) -> bool:
 
 
 def genius_get_search_hits(track_name: str, artist_name: str, max_hits: int = 5):
-    """Search Genius for likely lyric pages, using API token first, then a public fallback."""
+    """
+    Search Genius for likely lyric pages using the official API token.
+    No public fallback – if Genius blocks us, we just return [].
+    """
     s = _session(auth=True)
     q1 = f"{_norm(track_name)} {_norm(artist_name)}"
-    q2 = _norm(track_name) 
+    q2 = _norm(track_name)
 
     hits_all = []
+
     for q in (q1, q2):
         try:
             r = s.get("https://api.genius.com/search", params={"q": q}, timeout=12)
             log.info("genius: /search q=%s status=%s", q, r.status_code)
+
+            
             if r.status_code in (401, 403):
-                break  # token invalid => use public fallback
+                log.warning("genius: /search forbidden/unauthorized for q=%s", q)
+                return []  
+
             r.raise_for_status()
             hits = r.json().get("response", {}).get("hits", [])
         except Exception as e:
-            log.warning("genius: tokened search error: %s", e)
+            log.warning("genius: tokened search error for %s — %s: %s", track_name, artist_name, e)
             hits = []
 
         for h in hits:
@@ -89,36 +97,10 @@ def genius_get_search_hits(track_name: str, artist_name: str, max_hits: int = 5)
                     "id": res.get("id"),
                     "url": res.get("url"),
                     "title": res.get("title"),
-                    "artist": (res.get("primary_artist") or {}).get("name")
+                    "artist": (res.get("primary_artist") or {}).get("name"),
                 })
             if len(hits_all) >= max_hits:
                 return hits_all
-
-    if hits_all:
-        return hits_all
-
-    # Fallback: public multi-search endpoint (no token)
-    try:
-        r = _session(auth=False).get("https://genius.com/api/search/multi",
-                                     params={"q": q1, "per_page": 5}, timeout=12)
-        log.info("genius: public multi q=%s status=%s", q1, r.status_code)
-        r.raise_for_status()
-        sections = r.json().get("response", {}).get("sections", [])
-        for sec in sections:
-            if sec.get("type") == "song":
-                for h in sec.get("hits", []):
-                    res = h.get("result") or {}
-                    if _is_good_hit(res):
-                        hits_all.append({
-                            "id": res.get("id"),
-                            "url": res.get("url"),
-                            "title": res.get("title"),
-                            "artist": (res.get("primary_artist") or {}).get("name")
-                        })
-                    if len(hits_all) >= max_hits:
-                        return hits_all
-    except Exception as e:
-        log.warning("genius: public search error: %s", e)
 
     return hits_all
 
