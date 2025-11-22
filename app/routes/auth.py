@@ -5,10 +5,15 @@ auth_bp = Blueprint("auth", __name__)
 
 @auth_bp.route("/login")
 def login():
+    session.clear()
+
     sp_oauth = current_app.config["SP_OAUTH"]
-    auth_url = sp_oauth.get_authorize_url()
-    print("AUTH URL:", auth_url)
     return redirect(sp_oauth.get_authorize_url())
+
+@auth_bp.route("/logout")
+def logout():
+    session.clear()
+    return redirect("https://accounts.spotify.com/logout")
 
 @auth_bp.route("/callback")
 def callback():
