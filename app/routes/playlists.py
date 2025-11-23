@@ -92,3 +92,22 @@ def discover():
         return jsonify({"error": "Not logged in"}), 401
     return jsonify({"message": "Discovery handled by hybrid recommender now.",
                     "playlist_id": playlist_id})
+
+@playlists_bp.route("/whoami")
+def whoami():
+    from ..services.spotify_api import ensure_spotify
+    sp, _ = ensure_spotify()
+    if not sp:
+        return redirect(url_for("auth.login"))
+
+    me = sp.current_user()
+    # log to server
+    print("WHOAMI:", me.get("id"), "|", me.get("display_name"))
+
+    # show in browser
+    return (
+        f"<h1>Current Spotify user</h1>"
+        f"<p>ID: {me.get('id')}</p>"
+        f"<p>Display name: {me.get('display_name')}</p>"
+        f"<p>Email: {me.get('email')}</p>"
+    )
