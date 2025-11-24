@@ -22,7 +22,7 @@ def callback():
     if not code:
         return redirect(url_for("core.index"))
 
-    token_info = sp_oauth.get_access_token(code)
+    token_info = sp_oauth.get_access_token(code, check_cache=False)
     session["token_info"] = token_info
 
     access_token = token_info["access_token"]
