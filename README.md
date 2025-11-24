@@ -136,7 +136,7 @@ cd SpotifyPlaylistGeneratorPy
 2. Create & activate a virtual environment (optional but recommended)
 python -m venv venv
 source venv/bin/activate        # macOS / Linux
-# or
+ or
 venv\Scripts\activate           # Windows
 
 3. Install dependencies
