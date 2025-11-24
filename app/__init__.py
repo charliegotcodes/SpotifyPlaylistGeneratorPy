@@ -24,6 +24,7 @@ def create_app():
         redirect_uri=REDIRECT_URI,
         scope=SCOPE,
         cache_path=None,
+        cache_handler=None,
         show_dialog=True,
     )
 
