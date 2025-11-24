@@ -3,9 +3,6 @@ _Automatically generate new playlists using lyric embeddings, similarity search,
 
 This project builds personalized Spotify playlists by analyzing the **lyrics and mood** of tracks you choose. Using OpenAI embeddings, pgvector similarity search (Supabase), and Spotify’s Web API, the app generates a curated playlist that feels consistent with the vibe of your seed playlist.
 
-👉 **Live demo:** https://spotifyplaylistgeneratorpy.onrender.com  
-👉 **Source code:** https://github.com/charliegotcodes/SpotifyPlaylistGeneratorPy
-
 ---
 
 ## 🚀 Features
