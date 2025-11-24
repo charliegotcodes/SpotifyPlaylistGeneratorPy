@@ -79,9 +79,9 @@ app/
 ├── utils.py               # Duplicate detection / helper functions
 ├── templates/             # Jinja2 HTML templates
 └── static/                # CSS / JS / assets
-
-
-⚙️ How It Works (Pipeline)
+```
+---
+## ⚙️ How It Works (Pipeline)
 
 User logs in with Spotify
 
@@ -131,7 +131,7 @@ Filtered, non-duplicate recommended tracks are added
 
 User sees the final generated playlist
 
-🧪 Running Locally
+## 🧪 Running Locally
 1. Clone the repository
 git clone https://github.com/charliegotcodes/SpotifyPlaylistGeneratorPy.git
 cd SpotifyPlaylistGeneratorPy
