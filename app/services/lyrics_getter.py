@@ -83,6 +83,9 @@ def genius_get_search_hits(track_name: str, artist_name: str, max_hits: int = 5)
         try:
             r = s.get("https://api.genius.com/search", params={"q": q}, timeout=12)
             log.info("genius: /search q=%s status=%s", q, r.status_code)
+            log.warning("GENIUS DEBUG — /search q=%s status=%s", q, r.status_code)
+            log.warning("GENIUS DEBUG — /search head=%r", r.text[:200])
+
 
             
             if r.status_code in (401, 403):
@@ -115,7 +118,15 @@ def scrape_lyrics_from_genius(url: str) -> Optional[str]:
     Falls back to a reader if the main HTML lacks lyric containers."""
     s = _session(auth=False)
     try:
-        html = s.get(url, timeout=12).text
+        resp = s.get(url, timeout=12)
+        log.warning(
+                    "GENIUS DEBUG — page status=%s len=%s url=%s head=%r",
+                    resp.status_code,
+                    len(resp.text),
+                    url,
+                    resp.text[:120]
+                )
+        html = resp.text
     except Exception as e:
         log.warning("genius: fetch error %s", e)
         html = ""
@@ -127,7 +138,14 @@ def scrape_lyrics_from_genius(url: str) -> Optional[str]:
     # fallback via Jina proxy
     try:
         prox = "https://r.jina.ai/http/" + url.replace("https://", "").replace("http://", "")
-        prox_text = s.get(prox, timeout=12).text
+        prox_resp = s.get(prox, timeout=12)
+        log.warning(
+            "GENIUS DEBUG — proxy status=%s len=%s url=%s head=%r",
+            prox_resp.status_code,
+            len(prox_resp.text),
+            prox,
+            prox_resp.text[:120])
+        prox_text = prox_resp.text
         block = _slice_lyrics_like_section(prox_text)
         if block and len(block.split()) >= 10:
             return block
