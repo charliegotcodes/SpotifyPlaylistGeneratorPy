@@ -49,8 +49,8 @@ def _session(auth=True) -> requests.Session:
     if auth:
         token = current_app.config.get("GENIUS_API_KEY")
 
-        log.info("GENIUS DEBUG — token exists: %s", bool(token))
-        log.info("GENIUS DEBUG — token prefix: %s", token[:6] if token else None)
+        log.warning("GENIUS DEBUG — token exists: %s", bool(token))
+        log.warning("GENIUS DEBUG — token prefix: %s", token[:6] if token else None)
 
         if token:
             s.headers["Authorization"] = f"Bearer {token}"
