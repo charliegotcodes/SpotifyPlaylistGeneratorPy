@@ -1,6 +1,7 @@
 import re, unicodedata, requests, logging
 from bs4 import BeautifulSoup
 from flask import current_app
+from typing import Optional
 
 log = logging.getLogger("playlistgen")
 
@@ -105,7 +106,7 @@ def genius_get_search_hits(track_name: str, artist_name: str, max_hits: int = 5)
     return hits_all
 
 
-def scrape_lyrics_from_genius(url: str) -> str | None:
+def scrape_lyrics_from_genius(url: str) -> Optional[str]:
     """ Fetch a Genius page and extract lyrics text.
     Falls back to a reader if the main HTML lacks lyric containers."""
     s = _session(auth=False)
@@ -131,7 +132,7 @@ def scrape_lyrics_from_genius(url: str) -> str | None:
 
     return None
 
-def _extract_lyrics_from_html(html: str) -> str | None:
+def _extract_lyrics_from_html(html: str) -> Optional[str]:
     """Pull text from <div data-lyrics-container> blocks and clean structure markers."""
     if not html:
         return None
@@ -147,7 +148,7 @@ def _extract_lyrics_from_html(html: str) -> str | None:
     text = re.sub(r"\s{2,}", "\n", text).strip()
     return text if len(text.split()) >= 10 else None
 
-def _slice_lyrics_like_section(txt: str) -> str | None:
+def _slice_lyrics_like_section(txt: str) -> Optional[str]:
     """Extract a lyrics-like section from the text using loose heuristics."""
     if not txt:
         return None
@@ -165,7 +166,7 @@ def _slice_lyrics_like_section(txt: str) -> str | None:
     return chunk if len(chunk.split()) >= 10 else None
 
 
-def get_lyrics(track_name: str, artist_name: str) -> str | None:
+def get_lyrics(track_name: str, artist_name: str) -> Optional[str]:
     """ Combined entry point: tokened API search => public fallback => canonical slug.
     Returns plain lyrics text or None. """
     t = _clean_title(track_name)

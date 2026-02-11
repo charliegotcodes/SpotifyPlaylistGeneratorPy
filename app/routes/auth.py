@@ -10,13 +10,11 @@ def login():
     sp_oauth = current_app.config["SP_OAUTH"]
     return redirect(sp_oauth.get_authorize_url())
 
-@auth_bp.route("/logout")
-def logout():
-    session.clear()
-    return redirect("https://accounts.spotify.com/logout")
-
-@auth_bp.route("/callback")
+@auth_bp.route("/callback", methods=["GET", "HEAD"])
 def callback():
+    if request.method == "HEAD":
+        return ("", 200)
+
     sp_oauth = current_app.config["SP_OAUTH"]
     code = request.args.get("code")
     if not code:
